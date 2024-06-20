@@ -31,20 +31,19 @@ public class FeedbackService implements IFeedbackservice {
     @Override
     public ResponseEntity<FeedbackDTO> addFeedback(FeedbackDTO feedbackDTO) {
         Optional<User> userOptional = userRepository.findById(feedbackDTO.getUserId());
-        Optional<User> buyerOptional = userRepository.findById(feedbackDTO.getUserId());
+        Optional<User> buyerOptional = userRepository.findById(feedbackDTO.getBuyerId());
         Optional<Watch> watchOptional = watchRepository.findById(feedbackDTO.getWatchId());
         if (userOptional.isPresent() && watchOptional.isPresent()&& buyerOptional.isPresent()) {
-
             User user = userOptional.get();
             Watch watch = watchOptional.get();
-User buyer = buyerOptional.get();
+            User buyer = buyerOptional.get();
             boolean feedbackExists = feedbackRepository.existsByBuyerAndWatchAndUser(buyer, watch,user);
             if (feedbackExists) {
                 return ResponseEntity.badRequest().body(null);
             }
 
             Feedback feedback = Feedback.builder()
-                    .buyer(user)
+                    .buyer(buyer)
                     .user(user)
                     .watch(watch)
                     .comments(feedbackDTO.getComments())

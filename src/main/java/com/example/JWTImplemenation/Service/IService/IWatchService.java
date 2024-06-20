@@ -13,6 +13,7 @@ public interface IWatchService {
     ResponseEntity<WatchDTO> save(Integer userId, Watch watch);
     ResponseEntity<WatchDTO> update(Integer id, Watch watch);
     ResponseEntity<Void> deleteById(Integer id);
+    ResponseEntity<List<WatchDTO>> findByUserId(Integer userId);
     ResponseEntity<WatchDTO> addImagesToWatch(Integer watchId, List<MultipartFile> imageFiles);
     void updateWatchStatus(List<Integer> watchIds, boolean status, boolean isPaid);
 }

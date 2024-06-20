@@ -20,6 +20,7 @@ public class RegisterRequest {
     private String email;
     private String password;
     private String address;
+    private String avatarUrl;
     private String phone;
     @Enumerated(EnumType.STRING)
     private Gender gender;

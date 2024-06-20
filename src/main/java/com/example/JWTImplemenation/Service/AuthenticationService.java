@@ -31,6 +31,7 @@ public class AuthenticationService {
                 .phone(request.getPhone())
                 .gender(request.getGender())
                 .createdDate(request.getCreatedDate())
+                .avatarUrl(request.getAvatarUrl())
                 .rating(0)
                 .status(true)
                 .password(PasswordEncoder.encode(request.getPassword()))

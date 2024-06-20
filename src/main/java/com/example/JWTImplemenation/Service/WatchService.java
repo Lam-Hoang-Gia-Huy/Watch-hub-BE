@@ -80,6 +80,11 @@ public class WatchService implements IWatchService {
         }
     }
     @Override
+    public ResponseEntity<List<WatchDTO>> findByUserId(Integer userId) {
+        List<Watch> watches = watchRepository.findByUserId(userId);
+        return ResponseEntity.ok(convertToDTOList(watches));
+    }
+    @Override
     public ResponseEntity<WatchDTO> addImagesToWatch(Integer watchId, List<MultipartFile> imageFiles) {
         Optional<Watch> optionalWatch = watchRepository.findById(watchId);
         if (optionalWatch.isPresent()) {

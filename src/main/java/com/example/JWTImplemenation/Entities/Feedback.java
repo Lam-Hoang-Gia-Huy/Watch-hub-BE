@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "feedback", uniqueConstraints = @UniqueConstraint(columnNames = {"buyer_id", "watch_id"}))
+@Table(name = "feedback", uniqueConstraints = @UniqueConstraint(columnNames = {"buyer_id", "watch_id", "user_id"}))
 public class Feedback {
     @Id
     @GeneratedValue

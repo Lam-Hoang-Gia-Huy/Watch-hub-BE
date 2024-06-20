@@ -48,4 +48,8 @@ public class WatchController {
     public ResponseEntity<WatchDTO> addImagesToWatch(@PathVariable Integer watchId, @RequestParam("imageFiles") List<MultipartFile> imageFiles) {
         return iWatchService.addImagesToWatch(watchId, imageFiles);
     }
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<WatchDTO>> getWatchesByUserId(@PathVariable Integer userId) {
+        return iWatchService.findByUserId(userId);
+    }
 }
