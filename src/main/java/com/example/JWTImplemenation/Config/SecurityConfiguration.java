@@ -28,9 +28,10 @@ public class SecurityConfiguration{
                     .requestMatchers("api/v1/auth/**")
                     .permitAll()
                     .requestMatchers("/ws/**").permitAll()
-                    .requestMatchers("/api/v1/watch", "/api/v1/watch/{id}","/api/v1/watch/user/{id}").permitAll()
+                    .requestMatchers("/api/v1/product", "/api/v1/product/{id}","/api/v1/product/user/{id}").permitAll()
                     .requestMatchers("/api/v1/user", "/api/v1/user/{id}").permitAll()
                     .requestMatchers("/api/v1/appraisal", "/api/v1/appraisal/{id}").permitAll()
+                    .requestMatchers("/api/v1/feedback/user/{userId}").permitAll()
                     .anyRequest().authenticated()
             ).authenticationProvider(authenticationProvider)
             .addFilterBefore(JwtAuthFilter, UsernamePasswordAuthenticationFilter.class );

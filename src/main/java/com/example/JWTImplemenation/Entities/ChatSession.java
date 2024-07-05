@@ -24,15 +24,15 @@ public class ChatSession {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "watch_id", nullable = false)
-    private Watch watch;
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @ManyToOne
-    @JoinColumn(name = "appraiser_id", nullable = false)
+    @JoinColumn(name = "staff_id", nullable = false)
     private User appraiser;
 
     @ManyToOne
-    @JoinColumn(name = "seller_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User seller;
 
     @CreatedDate

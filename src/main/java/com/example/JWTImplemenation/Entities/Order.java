@@ -36,6 +36,4 @@ public class Order {
     @CreatedDate
     private Timestamp createdDate;
 
-    @LastModifiedDate
-    private Timestamp lastModifiedDate;
 }

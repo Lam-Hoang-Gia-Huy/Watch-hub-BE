@@ -2,11 +2,11 @@ package com.example.JWTImplemenation.Service;
 
 import com.example.JWTImplemenation.DTO.OrderDTO;
 import com.example.JWTImplemenation.DTO.OrderItemDTO;
-import com.example.JWTImplemenation.DTO.WatchDTO;
+import com.example.JWTImplemenation.DTO.ProductDTO;
 import com.example.JWTImplemenation.Entities.*;
 import com.example.JWTImplemenation.Repository.OrderRepository;
 import com.example.JWTImplemenation.Repository.UserRepository;
-import com.example.JWTImplemenation.Repository.WatchRespository;
+import com.example.JWTImplemenation.Repository.ProductRepository;
 import com.example.JWTImplemenation.Service.IService.IOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +26,7 @@ public class OrderService implements IOrderService {
     private UserRepository userRepository;
 
     @Autowired
-    private WatchRespository watchRepository;
+    private ProductRepository watchRepository;
 
     @Override
     public ResponseEntity<OrderDTO> createOrder(OrderDTO orderDTO) {
@@ -38,10 +38,11 @@ public class OrderService implements IOrderService {
 
         List<OrderItem> orderItems = orderDTO.getOrderItems().stream().map(itemDTO -> {
             OrderItem orderItem = new OrderItem();
-            Watch watch = watchRepository.findById(itemDTO.getWatch().getId())
-                    .orElseThrow(() -> new RuntimeException("Watch not found"));
-            orderItem.setWatch(watch);
-            orderItem.setPrice(itemDTO.getWatch().getPrice());
+            Product product = watchRepository.findById(itemDTO.getProduct().getId())
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+            orderItem.setProduct(product);
+            orderItem.setPrice(itemDTO.getProduct().getPrice());
+            orderItem.setQuantity(itemDTO.getQuantity()); // Set quantity
             orderItem.setOrder(order);
             return orderItem;
         }).collect(Collectors.toList());
@@ -51,6 +52,8 @@ public class OrderService implements IOrderService {
         Order savedOrder = orderRepository.save(order);
         return ResponseEntity.ok(convertToDTO(savedOrder));
     }
+
+
 
     @Override
     public ResponseEntity<List<OrderDTO>> getAllOrders() {
@@ -84,8 +87,6 @@ public class OrderService implements IOrderService {
         orderDTO.setUserId(order.getUser().getId());
         orderDTO.setTotalAmount(order.getTotalAmount());
         orderDTO.setCreatedDate(order.getCreatedDate());
-        orderDTO.setLastModifiedDate(order.getLastModifiedDate());
-
         List<OrderItemDTO> orderItemDTOs = order.getOrderItems().stream()
                 .map(this::convertOrderItemToDTO)
                 .collect(Collectors.toList());
@@ -96,32 +97,31 @@ public class OrderService implements IOrderService {
 
     private OrderItemDTO convertOrderItemToDTO(OrderItem orderItem) {
         OrderItemDTO orderItemDTO = new OrderItemDTO();
-        WatchDTO watchDTO = convertWatchToDTO(orderItem.getWatch());
-        orderItemDTO.setWatch(watchDTO);
+        ProductDTO productDTO = convertWatchToDTO(orderItem.getProduct());
+        orderItemDTO.setId(orderItem.getId());
+        orderItemDTO.setProduct(productDTO);
+        orderItemDTO.setQuantity(orderItem.getQuantity()); // Set quantity
         return orderItemDTO;
     }
 
-    private WatchDTO convertWatchToDTO(Watch watch) {
-        WatchDTO watchDTO = new WatchDTO();
-        watchDTO.setId(watch.getId());
-        watchDTO.setName(watch.getName());
-        watchDTO.setBrand(watch.getBrand());
-        watchDTO.setDescription(watch.getDescription());
-        watchDTO.setPrice(watch.getPrice());
-        watchDTO.setPaid(watch.isPaid());
-        watchDTO.setStatus(watch.isStatus());
-        watchDTO.setCreatedDate(watch.getCreatedDate());
-        if (watch.getImageUrl() != null) {
-            List<String> imageUrls = watch.getImageUrl()
+
+    private ProductDTO convertWatchToDTO(Product product) {
+        ProductDTO productDTO = new ProductDTO();
+        productDTO.setId(product.getId());
+        productDTO.setName(product.getName());
+        productDTO.setCategory(product.getCategory());
+        productDTO.setDescription(product.getDescription());
+        productDTO.setPrice(product.getPrice());
+        productDTO.setStockQuantity(product.getStockQuantity());
+        productDTO.setStatus(product.isStatus());
+        productDTO.setCreatedDate(product.getCreatedDate());
+        if (product.getImageUrl() != null) {
+            List<String> imageUrls = product.getImageUrl()
                     .stream()
                     .map(ImageUrl::getImageUrl)
                     .collect(Collectors.toList());
-            watchDTO.setImageUrl(imageUrls);
+            productDTO.setImageUrl(imageUrls);
         }
-        if (watch.getAppraisal() != null) {
-            watchDTO.setAppraisalId(watch.getAppraisal().getId());
-        }
-        watchDTO.setSellerId(watch.getUser().getId());
-        return watchDTO;
+        return productDTO;
     }
 }

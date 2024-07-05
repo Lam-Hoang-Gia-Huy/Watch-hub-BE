@@ -1,6 +1,5 @@
 package com.example.JWTImplemenation.DTO;
 
-import com.example.JWTImplemenation.Entities.Watch;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

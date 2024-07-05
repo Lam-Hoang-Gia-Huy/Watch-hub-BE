@@ -8,5 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderItemDTO {
-    private WatchDTO watch;
+    private int id;
+    private ProductDTO product;
+    private int quantity;
 }

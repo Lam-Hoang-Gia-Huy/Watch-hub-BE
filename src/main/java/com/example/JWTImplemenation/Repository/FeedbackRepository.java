@@ -1,15 +1,17 @@
 package com.example.JWTImplemenation.Repository;
 
-import com.example.JWTImplemenation.Entities.Feedback;
-import com.example.JWTImplemenation.Entities.User;
-import com.example.JWTImplemenation.Entities.Watch;
+import com.example.JWTImplemenation.Entities.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FeedbackRepository extends JpaRepository<Feedback, Integer> {
+    List<Feedback> findAllByProduct(Product product);
 
-    List<Feedback> findByUser(User user);
 
-    boolean existsByBuyerAndWatchAndUser(User buyer, Watch watch, User user);
+    Optional<Feedback> findByUserAndOrderItem(User user, OrderItem orderItem);
+
+
+    Optional<Feedback> findByOrderItemId(Integer orderItemId);
 }

@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.example.JWTImplemenation.Entities.Watch;
 
 
 @Data
@@ -21,5 +20,5 @@ public class ImageUrl {
     private Integer id;
     private String imageUrl;
     @ManyToOne
-    private Watch watch;
+    private Product product;
 }

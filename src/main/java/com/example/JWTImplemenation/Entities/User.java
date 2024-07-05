@@ -1,11 +1,7 @@
 package com.example.JWTImplemenation.Entities;
 
-import com.example.JWTImplemenation.Entities.Enum.Gender;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,33 +25,18 @@ public class User implements UserDetails {
     @GeneratedValue
     private Integer id;
     private String password;
-    private String firstName;
-    private String lastName;
+    private String name;
     private String email;
-    private String phone;
-    @Enumerated(EnumType.STRING)
-    private Gender gender;
     private String avatarUrl;
-    @Column(nullable = false, columnDefinition = "float default 0.0")
-    private double rating;
-    private String address;
     @CreatedDate
     private Timestamp createdDate;
     private boolean status;
     @Enumerated(EnumType.STRING)
     private Role role;
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Watch> watches;
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Cart cart;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Order> orders;
-
-    @OneToMany(mappedBy = "buyer", cascade = CascadeType.ALL)
-    private List<Feedback> givenFeedback;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Feedback> appraiserFeedback;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -66,6 +47,7 @@ public class User implements UserDetails {
     public String getUsername() {
         return email;
     }
+
 
     @Override
     public boolean isAccountNonExpired() {

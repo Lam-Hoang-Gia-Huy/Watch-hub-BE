@@ -3,13 +3,17 @@ package com.example.JWTImplemenation.Controller;
 import com.example.JWTImplemenation.Config.VNPayConfig;
 import com.example.JWTImplemenation.DTO.CartDTO;
 import com.example.JWTImplemenation.DTO.CartItemDTO;
-import com.example.JWTImplemenation.DTO.WatchDTO;
+import com.example.JWTImplemenation.Entities.CartItem;
+import com.example.JWTImplemenation.Entities.Product;
+import com.example.JWTImplemenation.Entities.Voucher;
+import com.example.JWTImplemenation.Repository.ProductRepository;
 import com.example.JWTImplemenation.Service.IService.ICartService;
-import com.example.JWTImplemenation.Service.IService.IWatchService;
+import com.example.JWTImplemenation.Service.IService.IVoucherService;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
@@ -25,9 +29,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/payment")
 public class PaymentController {
     @Autowired
-    private IWatchService watchService;
+    private ProductRepository productRepository;
     @Autowired
     private ICartService cartService;
+    @Autowired
+    private IVoucherService voucherService;
 
     @PostMapping("/create-payment-url")
     public Map<String, String> createPaymentUrl(@RequestBody Map<String, Object> payload) throws UnknownHostException, UnsupportedEncodingException {
@@ -141,13 +147,33 @@ public class PaymentController {
             // Retrieve cart items for the user
             ResponseEntity<CartDTO> cartResponse = cartService.findCartByUserId(id);
             if (cartResponse != null && cartResponse.getStatusCode().is2xxSuccessful()) {
-                List<Integer> watchIds = cartResponse.getBody().getCartItems().stream()
-                        .map(CartItemDTO::getWatch)
-                        .map(WatchDTO::getId)
-                        .collect(Collectors.toList());
+                CartDTO cartDTO = cartResponse.getBody();
+                String voucherCode = cartDTO.getVoucherCode(); // Get the voucher code from the cart
 
-                // Update watch status and isPaid status
-                watchService.updateWatchStatus(watchIds, false, true);
+                if (voucherCode != null) {
+                    Optional<Voucher> voucher = voucherService.findByCode(voucherCode);
+                    voucher.ifPresent(voucherService::incrementUsage);
+                }
+
+                List<CartItemDTO> cartItemsDTO = cartDTO.getCartItems();
+                List<CartItem> cartItems = cartItemsDTO.stream().map(dto -> {
+                    Product product = productRepository.findById(dto.getProduct().getId()).orElseThrow();
+                    return CartItem.builder()
+                            .product(product)
+                            .quantity(dto.getQuantity())
+                            .build();
+                }).collect(Collectors.toList());
+
+                try {
+                    // Update product quantities
+                    updateProductQuantities(cartItems);
+
+                    response.put("message", "Payment verified, stock updated");
+                } catch (IllegalArgumentException e) {
+                    response.put("success", false);
+                    response.put("message", e.getMessage());
+                    return response;
+                }
 
             } else {
                 // Handle error if cart retrieval fails
@@ -161,5 +187,17 @@ public class PaymentController {
         }
 
         return response;
+    }
+    @Transactional
+    public void updateProductQuantities(List<CartItem> cartItems) {
+        for (CartItem item : cartItems) {
+            Product product = item.getProduct();
+            int newStock = product.getStockQuantity() - item.getQuantity();
+            if (newStock < 0) {
+                throw new IllegalArgumentException("Insufficient stock for product: " + product.getName());
+            }
+            product.setStockQuantity(newStock);
+            productRepository.save(product);
+        }
     }
 }

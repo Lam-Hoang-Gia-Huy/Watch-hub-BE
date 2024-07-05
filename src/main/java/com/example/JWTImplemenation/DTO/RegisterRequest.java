@@ -15,14 +15,9 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterRequest {
-    private String firstname;
-    private String lastname;
+    private String userName;
     private String email;
     private String password;
-    private String address;
     private String avatarUrl;
-    private String phone;
-    @Enumerated(EnumType.STRING)
-    private Gender gender;
     public Timestamp createdDate;
 }

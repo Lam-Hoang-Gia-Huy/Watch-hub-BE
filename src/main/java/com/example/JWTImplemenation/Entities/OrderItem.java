@@ -22,9 +22,10 @@ public class OrderItem {
     private Order order;
 
     @ManyToOne
-    @JoinColumn(name = "watch_id", nullable = false)
-    private Watch watch;
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     private int price;
+    private int quantity;
 
 }

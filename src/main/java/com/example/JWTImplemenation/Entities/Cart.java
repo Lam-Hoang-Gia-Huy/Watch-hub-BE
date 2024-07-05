@@ -25,5 +25,6 @@ public class Cart {
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
     private List<CartItem> cartItems;
-
+    private double totalPrice;
+    private String voucherCode;
 }

@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Objects;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -18,20 +16,19 @@ public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private Integer quantity;
+
+    @Builder.Default
+    private Integer quantity = 1;  // Set default value to 1 or any sensible default
 
     @ManyToOne
     @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
 
     @ManyToOne
-    @JoinColumn(name = "watch_id", nullable = false)
-    private Watch watch;
-
-
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     public int getPrice() {
-        return watch.getPrice() * quantity;
+        return product.getPrice() * quantity;
     }
-
 }

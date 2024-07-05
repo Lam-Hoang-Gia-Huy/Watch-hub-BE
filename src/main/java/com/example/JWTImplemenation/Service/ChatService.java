@@ -5,7 +5,7 @@ import com.example.JWTImplemenation.Entities.*;
 import com.example.JWTImplemenation.Repository.ChatMessageRepository;
 import com.example.JWTImplemenation.Repository.ChatSessionRepository;
 import com.example.JWTImplemenation.Repository.UserRepository;
-import com.example.JWTImplemenation.Repository.WatchRespository;
+import com.example.JWTImplemenation.Repository.ProductRepository;
 import com.example.JWTImplemenation.Service.IService.IChatService;
 import com.example.JWTImplemenation.Service.IService.IImageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ public class ChatService implements IChatService {
     private UserRepository userRepository;
 
     @Autowired
-    private WatchRespository watchRepository;
+    private ProductRepository watchRepository;
     @Autowired
     private IImageService imageService;
     @Autowired
@@ -43,16 +43,16 @@ public class ChatService implements IChatService {
         Integer appraiserId = chatStartRequest.getAppraiserId();
 
         // Check for existing session
-        List<ChatSession> existingSessions = chatSessionRepository.findBySellerIdAndAppraiserIdAndWatchId(userId, appraiserId, watchId);
+        List<ChatSession> existingSessions = chatSessionRepository.findBySellerIdAndAppraiserIdAndProductId(userId, appraiserId, watchId);
         if (!existingSessions.isEmpty()) {
             return ResponseEntity.badRequest().body(null);
         }
 
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
         User appraiser = userRepository.findById(appraiserId).orElseThrow(() -> new IllegalArgumentException("Invalid appraiser ID"));
-        Watch watch = watchRepository.findById(watchId).orElseThrow(() -> new IllegalArgumentException("Invalid watch ID"));
+        Product product = watchRepository.findById(watchId).orElseThrow(() -> new IllegalArgumentException("Invalid watch ID"));
         ChatSession chatSession = new ChatSession();
-        chatSession.setWatch(watch);
+        chatSession.setProduct(product);
         chatSession.setSeller(user);
         chatSession.setAppraiser(appraiser);
         chatSession.setCreatedDate(new Timestamp(System.currentTimeMillis()));
@@ -107,7 +107,7 @@ public class ChatService implements IChatService {
     private ChatSessionDTO convertToDTO(ChatSession chatSession) {
         ChatSessionDTO dto = new ChatSessionDTO();
         dto.setId(chatSession.getId());
-        dto.setWatch(convertToDTO(chatSession.getWatch()));
+        dto.setWatch(convertToDTO(chatSession.getProduct()));
         dto.setAppraiser(convertToDTO(chatSession.getAppraiser()));
         dto.setSeller(convertToDTO(chatSession.getSeller()));
         dto.setCreatedDate(chatSession.getCreatedDate());
@@ -124,41 +124,32 @@ public class ChatService implements IChatService {
         return UserDTO.builder()
                 .id(user.getId())
                 .password(user.getPassword())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
+                .name(user.getUsername())
                 .email(user.getEmail())
-                .phone(user.getPhone())
-                .gender(user.getGender())
                 .avatarUrl(user.getAvatarUrl())
-                .address(user.getAddress())
                 .status(user.isStatus())
                 .role(user.getRole())
                 .createdDate(user.getCreatedDate())
                 .build();
     }
-    private WatchDTO convertToDTO(Watch watch) {
-        WatchDTO watchDTO = new WatchDTO();
-        watchDTO.setId(watch.getId());
-        watchDTO.setName(watch.getName());
-        watchDTO.setBrand(watch.getBrand());
-        watchDTO.setDescription(watch.getDescription());
-        watchDTO.setPrice(watch.getPrice());
-        watchDTO.setPaid(watch.isPaid());
-        watchDTO.setStatus(watch.isStatus());
-        watchDTO.setCreatedDate(watch.getCreatedDate());
-        watchDTO.setCreatedDate(watch.getCreatedDate());
-        if (watch.getImageUrl() != null) {
-            List<String> imageUrls = watch.getImageUrl()
+    private ProductDTO convertToDTO(Product product) {
+        ProductDTO productDTO = new ProductDTO();
+        productDTO.setId(product.getId());
+        productDTO.setName(product.getName());
+        productDTO.setCategory(product.getCategory());
+        productDTO.setDescription(product.getDescription());
+        productDTO.setPrice(product.getPrice());
+        productDTO.setStatus(product.isStatus());
+        productDTO.setCreatedDate(product.getCreatedDate());
+        productDTO.setCreatedDate(product.getCreatedDate());
+        if (product.getImageUrl() != null) {
+            List<String> imageUrls = product.getImageUrl()
                     .stream()
                     .map(ImageUrl::getImageUrl)
                     .collect(Collectors.toList());
-            watchDTO.setImageUrl(imageUrls);
+            productDTO.setImageUrl(imageUrls);
         }
-        if (watch.getAppraisal() != null) {
-            watchDTO.setAppraisalId(watch.getAppraisal().getId());
-        }
-        watchDTO.setSellerId(watch.getUser().getId()); // Set sellerId
-        return watchDTO;
+        return productDTO;
     }
 
 }

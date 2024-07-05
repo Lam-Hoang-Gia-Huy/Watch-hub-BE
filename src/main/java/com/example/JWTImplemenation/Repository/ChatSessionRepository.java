@@ -9,5 +9,5 @@ public interface ChatSessionRepository extends JpaRepository<ChatSession, Long> 
 
     List<ChatSession> findBySellerIdOrAppraiserId(Integer userId, Integer userId1);
 
-    List<ChatSession> findBySellerIdAndAppraiserIdAndWatchId(Integer userId, Integer appraiserId, Integer watchId);
+    List<ChatSession> findBySellerIdAndAppraiserIdAndProductId(Integer userId, Integer appraiserId, Integer watchId);
 }

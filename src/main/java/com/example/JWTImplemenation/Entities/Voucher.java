@@ -16,27 +16,22 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "feedback")
-public class Feedback {
+@Table(name = "voucher")
+public class Voucher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
-
-    @ManyToOne
-    @JoinColumn(name = "order_item_id", nullable = false) // Link to OrderItem
-    private OrderItem orderItem;
-
-    private String comment;
-    private int score;
+    private String code;
 
     @CreatedDate
     private Timestamp createdDate;
+
+    private Timestamp startDate;
+    private Timestamp endDate;
+    private double discountValue;
+    private double minimumPurchase;
+    private int maxUsage;
+    private int currentUsage;
+    private boolean status;
 }

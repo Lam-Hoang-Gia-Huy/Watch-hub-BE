@@ -13,4 +13,5 @@ public interface ICartService {
     ResponseEntity<Void> removeFromCart(Integer userId, Integer cartItemId);
     void clearCart(Integer userId);
     List<Integer> findWatchIdsInCart(Integer userId);
+    CartDTO applyVoucher(Integer userId, String voucherCode);
 }

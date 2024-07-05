@@ -5,21 +5,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class WatchDTO {
+public class ProductDTO {
     private Integer id;
     private String name;
-    private String brand;
+    private String category;
     private String description;
-    private boolean isPaid;
+    private int stockQuantity;
     private boolean status;
     private Integer price;
     private Timestamp createdDate;
     private List<String> imageUrl;
-    private Integer appraisalId;
-    private Integer sellerId;
 }

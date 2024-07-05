@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 public class ChatSessionDTO {
     private Integer id;
-    private WatchDTO watch;
+    private ProductDTO watch;
     private UserDTO appraiser;
     private UserDTO seller;
     private Timestamp createdDate;

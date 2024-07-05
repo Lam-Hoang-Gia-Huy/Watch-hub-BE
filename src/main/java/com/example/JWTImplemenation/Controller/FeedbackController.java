@@ -1,7 +1,7 @@
 package com.example.JWTImplemenation.Controller;
 
 import com.example.JWTImplemenation.DTO.FeedbackDTO;
-import com.example.JWTImplemenation.Service.FeedbackService;
+import com.example.JWTImplemenation.Service.IService.IFeedbackservice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +11,20 @@ import org.springframework.web.bind.annotation.*;
 public class FeedbackController {
 
     @Autowired
-    private FeedbackService feedbackService;
+    private IFeedbackservice feedbackService;
 
     @PostMapping
-    public ResponseEntity<FeedbackDTO> addFeedback(@RequestBody FeedbackDTO feedbackDTO) {
-        return feedbackService.addFeedback(feedbackDTO);
+    public ResponseEntity<FeedbackDTO> createFeedback(@RequestBody FeedbackDTO feedbackDTO) {
+        return feedbackService.createFeedback(feedbackDTO);
+    }
+
+    @PutMapping("/{feedbackId}")
+    public ResponseEntity<FeedbackDTO> updateFeedback(@PathVariable Integer feedbackId, @RequestBody FeedbackDTO feedbackDTO) {
+        return feedbackService.updateFeedback(feedbackId, feedbackDTO);
+    }
+
+    @GetMapping("/{orderItemId}")
+    public ResponseEntity<FeedbackDTO> getFeedback(@PathVariable Integer orderItemId) {
+        return feedbackService.getFeedbackByProductAndOrder(orderItemId);
     }
 }

@@ -2,15 +2,9 @@ package com.example.JWTImplemenation.Service;
 
 import com.example.JWTImplemenation.DTO.CartDTO;
 import com.example.JWTImplemenation.DTO.CartItemDTO;
-import com.example.JWTImplemenation.DTO.WatchDTO;
-import com.example.JWTImplemenation.Entities.Cart;
-import com.example.JWTImplemenation.Entities.CartItem;
-import com.example.JWTImplemenation.Entities.User;
-import com.example.JWTImplemenation.Entities.Watch;
-import com.example.JWTImplemenation.Repository.CartItemRepository;
-import com.example.JWTImplemenation.Repository.CartRepository;
-import com.example.JWTImplemenation.Repository.WatchRespository;
-import com.example.JWTImplemenation.Repository.UserRepository;
+import com.example.JWTImplemenation.DTO.ProductDTO;
+import com.example.JWTImplemenation.Entities.*;
+import com.example.JWTImplemenation.Repository.*;
 import com.example.JWTImplemenation.Service.IService.ICartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +26,31 @@ public class CartService implements ICartService {
     @Autowired
     private CartItemRepository cartItemRepository;
     @Autowired
-    private WatchRespository watchRespository;
+    private ProductRepository productRepository;
+    @Autowired
+    private VoucherRepository voucherRepository;
+
+    public CartDTO applyVoucher(Integer userId, String voucherCode) {
+        Cart cart = cartRepository.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("Cart not found"));
+        Voucher voucher = voucherRepository.findByCodeAndStatusTrue(voucherCode).orElseThrow(() -> new IllegalArgumentException("Invalid voucher code"));
+
+        double totalPrice = cart.getCartItems().stream()
+                .mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity())
+                .sum();
+
+        if (totalPrice >= voucher.getMinimumPurchase() && voucher.getCurrentUsage() < voucher.getMaxUsage()) {
+            double discountedPrice = totalPrice - voucher.getDiscountValue();
+            cart.setTotalPrice(discountedPrice);
+            cart.setVoucherCode(voucherCode);
+            cartRepository.save(cart);
+
+            // Convert Cart entity to CartDTO
+            List<CartItemDTO> cartItemDTOs = convertToDTOList(cart.getCartItems());
+            return new CartDTO(cartItemDTOs, discountedPrice, voucherCode);
+        } else {
+            throw new IllegalArgumentException("Voucher conditions not met");
+        }
+    }
 
     @Override
     public ResponseEntity<CartDTO> findCartByUserId(Integer userId) {
@@ -41,10 +59,10 @@ public class CartService implements ICartService {
             Optional<Cart> cart = cartRepository.findByUserId(userId);
             if (cart.isPresent()) {
                 List<CartItem> cartItems = cart.get().getCartItems();
-                double totalPrice = cartItems.stream().mapToDouble(CartItem::getPrice).sum();
                 CartDTO cartDTO = new CartDTO();
                 cartDTO.setCartItems(convertToDTOList(cartItems));
-                cartDTO.setTotalPrice(totalPrice);
+                cartDTO.setTotalPrice(cart.get().getTotalPrice());
+                cartDTO.setVoucherCode(cart.get().getVoucherCode()); // Set the voucher code
                 return ResponseEntity.ok(cartDTO);
             } else {
                 // Create a new cart if not present
@@ -54,6 +72,7 @@ public class CartService implements ICartService {
                 cartRepository.save(newCart);
                 CartDTO cartDTO = new CartDTO();
                 cartDTO.setCartItems(new ArrayList<>());
+                cartDTO.setVoucherCode(null); // No voucher code for new cart
                 cartDTO.setTotalPrice(0.0);
                 return ResponseEntity.ok(cartDTO);
             }
@@ -65,11 +84,11 @@ public class CartService implements ICartService {
     @Override
     public ResponseEntity<CartItemDTO> addToCart(Integer userId, CartItemDTO cartItemRequest) {
         Optional<User> userOptional = userRepository.findById(userId);
-        Optional<Watch> watchOptional = watchRespository.findById(cartItemRequest.getWatch().getId());
+        Optional<Product> watchOptional = productRepository.findById(cartItemRequest.getProduct().getId());
 
         if (userOptional.isPresent() && watchOptional.isPresent()) {
             User user = userOptional.get();
-            Watch watch = watchOptional.get();
+            Product product = watchOptional.get();
 
             // Ensure the user has a cart
             Cart cart = user.getCart();
@@ -82,20 +101,19 @@ public class CartService implements ICartService {
 
             // Check if the watch is already in the cart
             Optional<CartItem> existingCartItem = cart.getCartItems().stream()
-                    .filter(item -> item.getWatch().getId().equals(watch.getId()))
+                    .filter(item -> item.getProduct().getId().equals(product.getId()))
                     .findFirst();
 
             CartItem cartItem;
             if (existingCartItem.isPresent()) {
                 // Watch is already in the cart, update the quantity
                 cartItem = existingCartItem.get();
-                cartItem.setQuantity(cartItem.getQuantity() + 1); // Increment quantity
+                cartItem.setQuantity(cartItem.getQuantity() + 1); // Update quantity
             } else {
                 // Add new watch to the cart
                 cartItem = new CartItem();
                 cartItem.setCart(cart);
-                cartItem.setWatch(watch);
-                cartItem.setQuantity(1); // Set initial quantity to 1
+                cartItem.setProduct(product);
                 cart.getCartItems().add(cartItem);
             }
 
@@ -124,22 +142,20 @@ public class CartService implements ICartService {
     private CartItemDTO convertToDTO(CartItem cartItem) {
         CartItemDTO cartItemDTO = new CartItemDTO();
         cartItemDTO.setId(cartItem.getId());
-        Watch watch = cartItem.getWatch();
-        if (watch != null) {
-            WatchDTO watchDTO = new WatchDTO();
-            watchDTO.setId(watch.getId());
-            watchDTO.setName(watch.getName());
-            watchDTO.setBrand(watch.getBrand());
-            watchDTO.setDescription(watch.getDescription());
-            watchDTO.setPaid(watch.isPaid());
-            watchDTO.setStatus(watch.isStatus());
-            watchDTO.setPrice(watch.getPrice());
-            watchDTO.setCreatedDate(watch.getCreatedDate());
-            watchDTO.setImageUrl(watch.getImageUrl().stream().map(image -> image.getImageUrl()).collect(Collectors.toList()));
-            watchDTO.setAppraisalId(watch.getAppraisal().getId());
-            watchDTO.setSellerId(watch.getUser().getId());
-
-            cartItemDTO.setWatch(watchDTO);
+        cartItemDTO.setQuantity(cartItem.getQuantity());
+        Product product = cartItem.getProduct();
+        if (product != null) {
+            ProductDTO productDTO = new ProductDTO();
+            productDTO.setId(product.getId());
+            productDTO.setName(product.getName());
+            productDTO.setCategory(product.getCategory());
+            productDTO.setDescription(product.getDescription());
+            productDTO.setStockQuantity(product.getStockQuantity());
+            productDTO.setStatus(product.isStatus());
+            productDTO.setPrice(product.getPrice());
+            productDTO.setCreatedDate(product.getCreatedDate());
+            productDTO.setImageUrl(product.getImageUrl().stream().map(image -> image.getImageUrl()).collect(Collectors.toList()));
+            cartItemDTO.setProduct(productDTO);
         }
 
         return cartItemDTO;
@@ -169,7 +185,7 @@ public class CartService implements ICartService {
             if (cartOptional.isPresent()) {
                 List<CartItem> cartItems = cartOptional.get().getCartItems();
                 return cartItems.stream()
-                        .map(cartItem -> cartItem.getWatch().getId())
+                        .map(cartItem -> cartItem.getProduct().getId())
                         .collect(Collectors.toList());
             }
         }

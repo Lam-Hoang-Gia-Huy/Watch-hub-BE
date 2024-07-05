@@ -19,16 +19,10 @@ import java.sql.Timestamp;
 public class UserDTO {
     private Integer id;
     private String password;
-    private String firstName;
-    private String lastName;
+    private String name;
     private String email;
-    private String phone;
-    private double rating;
-    @Enumerated(EnumType.STRING)
-    private Gender gender;
     private String avatarUrl;
     private Timestamp createdDate;
-    private String address;
     private boolean status;
     @Enumerated(EnumType.STRING)
     private Role role;

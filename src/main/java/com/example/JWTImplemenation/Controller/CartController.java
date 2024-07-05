@@ -34,5 +34,14 @@ public class CartController {
         cartService.clearCart(userId);
         return ResponseEntity.noContent().build();
     }
+    @PutMapping("/{userId}/apply-voucher")
+    public ResponseEntity<CartDTO> applyVoucher(@PathVariable Integer userId, @RequestParam String voucherCode) {
+        try {
+            CartDTO updatedCart = cartService.applyVoucher(userId, voucherCode);
+            return ResponseEntity.ok(updatedCart);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }
 

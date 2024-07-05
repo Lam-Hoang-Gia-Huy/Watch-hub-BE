@@ -5,6 +5,7 @@ import com.example.JWTImplemenation.Service.IService.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -26,12 +27,23 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> update(@PathVariable Integer id, @RequestBody UserDTO userDTO) {
-        return userService.update(id, userDTO);
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Integer id,
+                                              @RequestPart("user") UserDTO userDTO,
+                                              @RequestPart("avatar") MultipartFile avatarFile) {
+        return userService.update(id, userDTO, avatarFile);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Integer id) {
+    //    @DeleteMapping("/{id}")
+//    public ResponseEntity<Void> deleteById(@PathVariable Integer id) {
+//        return userService.deleteById(id);
+//    }
+    @PutMapping("/deactivate/{id}")
+    public ResponseEntity<Void> deactivateUser(@PathVariable Integer id) {
         return userService.deleteById(id);
+    }
+
+    @PutMapping("/activate/{id}")
+    public ResponseEntity<Void> activateUser(@PathVariable Integer id) {
+        return userService.activateUser(id);
     }
 }
