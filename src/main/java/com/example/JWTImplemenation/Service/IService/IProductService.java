@@ -15,5 +15,9 @@ public interface IProductService {
     ResponseEntity<Void> deleteById(Integer id);
     ResponseEntity<List<ProductDTO>> searchProducts(String name, String brand, Integer minPrice, Integer maxPrice);
     ResponseEntity<ProductDTO> addImagesToWatch(Integer watchId, List<MultipartFile> imageFiles);
+
+    ResponseEntity<ProductDTO> update(Integer id, ProductDTO productDTO);
+
     void updateWatchStatus(List<Integer> watchIds, boolean status, boolean isPaid);
+
 }

@@ -1,20 +1,16 @@
 package com.example.JWTImplemenation.DTO;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 
 public class ChatStartRequest {
-    private Integer watchId;
+    private Integer productId;
     private Integer userId;
-    private Integer appraiserId;
-    public Integer getWatchId() {
-        return watchId;
+    private Integer staffId;
+    public Integer getProductId() {
+        return productId;
     }
 
-    public void setWatchId(Integer watchId) {
-        this.watchId = watchId;
+    public void setProductId(Integer productId) {
+        this.productId = productId;
     }
 
     public Integer getUserId() {
@@ -25,11 +21,11 @@ public class ChatStartRequest {
         this.userId = userId;
     }
 
-    public Integer getAppraiserId() {
-        return appraiserId;
+    public Integer getStaffId() {
+        return staffId;
     }
 
-    public void setAppraiserId(Integer appraiserId) {
-        this.appraiserId = appraiserId;
+    public void setStaffId(Integer staffId) {
+        this.staffId = staffId;
     }
 }

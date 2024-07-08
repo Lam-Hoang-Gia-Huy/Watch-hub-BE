@@ -1,6 +1,7 @@
 package com.example.JWTImplemenation.Service;
 
 import com.example.JWTImplemenation.DTO.UserDTO;
+import com.example.JWTImplemenation.Entities.Role;
 import com.example.JWTImplemenation.Entities.User;
 import com.example.JWTImplemenation.Repository.UserRepository;
 import com.example.JWTImplemenation.Service.IService.IUserService;
@@ -69,6 +70,11 @@ public class UserService implements IUserService {
             return ResponseEntity.notFound().build();
         }
     }
+    public ResponseEntity<List<UserDTO>> findAllStaff() {
+        List<User> staffMembers = userRepository.findByRoleAndStatus(Role.STAFF, true);
+        return ResponseEntity.ok(convertToDTOList(staffMembers));
+    }
+
     private UserDTO convertToDTO(User user) {
         return UserDTO.builder()
                 .id(user.getId())

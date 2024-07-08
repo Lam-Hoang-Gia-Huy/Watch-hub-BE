@@ -17,6 +17,7 @@ public class ProductDTO {
     private int stockQuantity;
     private boolean status;
     private Integer price;
+    private double averageScore;
     private Timestamp createdDate;
     private List<String> imageUrl;
 }

@@ -46,4 +46,8 @@ public class UserController {
     public ResponseEntity<Void> activateUser(@PathVariable Integer id) {
         return userService.activateUser(id);
     }
+    @GetMapping("/staff")
+    public ResponseEntity<List<UserDTO>> findAllStaff() {
+        return userService.findAllStaff();
+    }
 }

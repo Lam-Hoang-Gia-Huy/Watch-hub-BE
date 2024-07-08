@@ -156,6 +156,19 @@ public class PaymentController {
                 }
 
                 List<CartItemDTO> cartItemsDTO = cartDTO.getCartItems();
+                List<CartItemDTO> invalidItems = cartItemsDTO.stream()
+                        .filter(item -> !item.getProduct().isStatus())
+                        .collect(Collectors.toList());
+                if (!invalidItems.isEmpty()) {
+                    response.put("success", false);
+                    response.put("message", "Payment failed due to invalid items in the cart.");
+                    return response;
+                }
+                // Remove invalid items and log the operation
+                invalidItems.forEach(item -> {
+                    System.out.println("Removing invalid item: " + item.getId() + " from cart");
+                    cartService.removeFromCart(id, item.getId());
+                });
                 List<CartItem> cartItems = cartItemsDTO.stream().map(dto -> {
                     Product product = productRepository.findById(dto.getProduct().getId()).orElseThrow();
                     return CartItem.builder()

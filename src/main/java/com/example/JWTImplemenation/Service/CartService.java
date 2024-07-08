@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -56,13 +58,45 @@ public class CartService implements ICartService {
     public ResponseEntity<CartDTO> findCartByUserId(Integer userId) {
         Optional<User> user = userRepository.findById(userId);
         if (user.isPresent()) {
-            Optional<Cart> cart = cartRepository.findByUserId(userId);
-            if (cart.isPresent()) {
-                List<CartItem> cartItems = cart.get().getCartItems();
+            Optional<Cart> cartOptional = cartRepository.findByUserId(userId);
+            if (cartOptional.isPresent()) {
+                Cart cart = cartOptional.get();
+
+                // Check if the cart has a voucher
+                if (cart.getVoucherCode() != null) {
+                    Optional<Voucher> voucherOptional = voucherRepository.findByCode(cart.getVoucherCode());
+                    if (voucherOptional.isPresent()) {
+                        Voucher voucher = voucherOptional.get();
+                        double totalPrice = cart.getCartItems().stream()
+                                .mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity())
+                                .sum();
+                        // Convert java.sql.Timestamp to java.time.LocalDate
+                        LocalDate startDate = voucher.getStartDate().toLocalDateTime().toLocalDate();
+                        LocalDate endDate = voucher.getEndDate().toLocalDateTime().toLocalDate();
+
+                        // Check if the voucher is valid
+                        boolean isVoucherValid = voucher.isStatus() &&
+                                totalPrice >= voucher.getMinimumPurchase() &&
+                                voucher.getMaxUsage() > voucher.getCurrentUsage() &&
+                                LocalDate.now().isAfter(startDate) &&
+                                LocalDate.now().isBefore(endDate);
+
+                        if (!isVoucherValid) {
+                            // Voucher is not available, remove the voucher from the cart
+                            cart.setVoucherCode(null);
+                            cart.setTotalPrice(totalPrice);
+                            cartRepository.save(cart);
+                        }
+                    } else {
+                        cart.setVoucherCode(null);
+                    }
+                }
+
+                List<CartItem> cartItems = cart.getCartItems();
                 CartDTO cartDTO = new CartDTO();
                 cartDTO.setCartItems(convertToDTOList(cartItems));
-                cartDTO.setTotalPrice(cart.get().getTotalPrice());
-                cartDTO.setVoucherCode(cart.get().getVoucherCode()); // Set the voucher code
+                cartDTO.setTotalPrice(cart.getTotalPrice());
+                cartDTO.setVoucherCode(cart.getVoucherCode()); // Set the voucher code
                 return ResponseEntity.ok(cartDTO);
             } else {
                 // Create a new cart if not present
@@ -84,11 +118,11 @@ public class CartService implements ICartService {
     @Override
     public ResponseEntity<CartItemDTO> addToCart(Integer userId, CartItemDTO cartItemRequest) {
         Optional<User> userOptional = userRepository.findById(userId);
-        Optional<Product> watchOptional = productRepository.findById(cartItemRequest.getProduct().getId());
+        Optional<Product> productOptional = productRepository.findById(cartItemRequest.getProduct().getId());
 
-        if (userOptional.isPresent() && watchOptional.isPresent()) {
+        if (userOptional.isPresent() && productOptional.isPresent()) {
             User user = userOptional.get();
-            Product product = watchOptional.get();
+            Product product = productOptional.get();
 
             // Ensure the user has a cart
             Cart cart = user.getCart();
@@ -96,28 +130,37 @@ public class CartService implements ICartService {
                 cart = new Cart();
                 cart.setUser(user);
                 cart.setCartItems(new ArrayList<>());
+                cart.setTotalPrice(0.0);
                 cartRepository.save(cart);
             }
 
-            // Check if the watch is already in the cart
+            // Check if the product is already in the cart
             Optional<CartItem> existingCartItem = cart.getCartItems().stream()
                     .filter(item -> item.getProduct().getId().equals(product.getId()))
                     .findFirst();
 
             CartItem cartItem;
             if (existingCartItem.isPresent()) {
-                // Watch is already in the cart, update the quantity
+                // Product is already in the cart, update the quantity
                 cartItem = existingCartItem.get();
-                cartItem.setQuantity(cartItem.getQuantity() + 1); // Update quantity
+                cartItem.setQuantity(cartItem.getQuantity() +1); // Update quantity
             } else {
-                // Add new watch to the cart
+                // Add new product to the cart
                 cartItem = new CartItem();
                 cartItem.setCart(cart);
                 cartItem.setProduct(product);
+
                 cart.getCartItems().add(cartItem);
             }
 
             cartItemRepository.save(cartItem);
+
+            // Recalculate the total price of the cart
+            double totalPrice = cart.getCartItems().stream()
+                    .mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity())
+                    .sum();
+            cart.setTotalPrice(totalPrice);
+            cartRepository.save(cart);
 
             // Convert and return DTO
             CartItemDTO responseDTO = convertToDTO(cartItem);
@@ -128,16 +171,55 @@ public class CartService implements ICartService {
     }
 
 
+
+
     @Override
     public ResponseEntity<Void> removeFromCart(Integer userId, Integer cartItemId) {
-        Optional<CartItem> cartItem = cartItemRepository.findById(cartItemId);
-        if (cartItem.isPresent() && cartItem.get().getCart().getUser().getId().equals(userId)) {
-            cartItemRepository.delete(cartItem.get());
+        Optional<CartItem> cartItemOptional = cartItemRepository.findById(cartItemId);
+        if (cartItemOptional.isPresent() && cartItemOptional.get().getCart().getUser().getId().equals(userId)) {
+            CartItem cartItem = cartItemOptional.get();
+            Cart cart = cartItem.getCart();
+            cartItemRepository.delete(cartItem);
+
+            // Recalculate the total price of the cart
+            double totalPrice = cart.getCartItems().stream()
+                    .mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity())
+                    .sum();
+
+            // Check if the cart has a voucher
+            if (cart.getVoucherCode() != null) {
+                Optional<Voucher> voucherOptional = voucherRepository.findByCode(cart.getVoucherCode());
+                if (voucherOptional.isPresent()) {
+                    Voucher voucher = voucherOptional.get();
+                    // Convert java.sql.Timestamp to java.time.LocalDate
+                    LocalDate startDate = voucher.getStartDate().toLocalDateTime().toLocalDate();
+                    LocalDate endDate = voucher.getEndDate().toLocalDateTime().toLocalDate();
+
+                    // Check if the voucher is valid
+                    boolean isVoucherValid = voucher.isStatus() &&
+                            totalPrice >= voucher.getMinimumPurchase() &&
+                            voucher.getMaxUsage() > voucher.getCurrentUsage() &&
+                            LocalDate.now().isAfter(startDate) &&
+                            LocalDate.now().isBefore(endDate);
+
+                    if (!isVoucherValid) {
+                        // Voucher is not available, remove the voucher from the cart
+                        cart.setVoucherCode(null);
+                    }
+                } else {
+                    cart.setVoucherCode(null);
+                }
+            }
+
+            cart.setTotalPrice(totalPrice);
+            cartRepository.save(cart);
+
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
         }
     }
+
 
     private CartItemDTO convertToDTO(CartItem cartItem) {
         CartItemDTO cartItemDTO = new CartItemDTO();
@@ -168,12 +250,15 @@ public class CartService implements ICartService {
     @Transactional
     @Override
     public void clearCart(Integer userId) {
-        Optional<Cart> cart = cartRepository.findByUserId(userId);
-        cart.ifPresent(existingCart -> {
-            List<CartItem> cartItems = existingCart.getCartItems();
+        Optional<Cart> cartOptional = cartRepository.findByUserId(userId);
+        cartOptional.ifPresent(cart -> {
+            List<CartItem> cartItems = cart.getCartItems();
             cartItemRepository.deleteAll(cartItems);
-            existingCart.setCartItems(new ArrayList<>());
-            cartRepository.save(existingCart);
+            cart.setCartItems(new ArrayList<>());
+cart.setVoucherCode(null);
+            // Set the total price to zero after clearing the cart
+            cart.setTotalPrice(0.0);
+            cartRepository.save(cart);
         });
     }
 

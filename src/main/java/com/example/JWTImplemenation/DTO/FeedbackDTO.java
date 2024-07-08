@@ -12,6 +12,8 @@ import java.sql.Timestamp;
 public class FeedbackDTO {
     private Integer id;
     private Integer userId;
+    private String userName;
+    private String avatarUrl;
     private Integer productId;
     private Integer orderItemId;
     private String comment;

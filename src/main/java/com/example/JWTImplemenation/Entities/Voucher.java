@@ -21,16 +21,15 @@ public class Voucher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
+    @Column(unique = true, nullable = false)
     private String code;
-
     @CreatedDate
     private Timestamp createdDate;
 
     private Timestamp startDate;
     private Timestamp endDate;
     private double discountValue;
-    private double minimumPurchase;
+        private double minimumPurchase;
     private int maxUsage;
     private int currentUsage;
     private boolean status;

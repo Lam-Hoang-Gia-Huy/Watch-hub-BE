@@ -38,9 +38,9 @@ public class ChatService implements IChatService {
     private SimpMessagingTemplate messagingTemplate;
 @Override
     public ResponseEntity<ChatSessionDTO> startChatSession(ChatStartRequest chatStartRequest) {
-        Integer watchId = chatStartRequest.getWatchId();
+        Integer watchId = chatStartRequest.getProductId();
         Integer userId = chatStartRequest.getUserId();
-        Integer appraiserId = chatStartRequest.getAppraiserId();
+        Integer appraiserId = chatStartRequest.getStaffId();
 
         // Check for existing session
         List<ChatSession> existingSessions = chatSessionRepository.findBySellerIdAndAppraiserIdAndProductId(userId, appraiserId, watchId);
@@ -107,9 +107,9 @@ public class ChatService implements IChatService {
     private ChatSessionDTO convertToDTO(ChatSession chatSession) {
         ChatSessionDTO dto = new ChatSessionDTO();
         dto.setId(chatSession.getId());
-        dto.setWatch(convertToDTO(chatSession.getProduct()));
-        dto.setAppraiser(convertToDTO(chatSession.getAppraiser()));
-        dto.setSeller(convertToDTO(chatSession.getSeller()));
+        dto.setProduct(convertToDTO(chatSession.getProduct()));
+        dto.setStaff(convertToDTO(chatSession.getAppraiser()));
+        dto.setUser(convertToDTO(chatSession.getSeller()));
         dto.setCreatedDate(chatSession.getCreatedDate());
 
         List<ChatMessage> messages = chatSession.getMessages();
@@ -124,7 +124,7 @@ public class ChatService implements IChatService {
         return UserDTO.builder()
                 .id(user.getId())
                 .password(user.getPassword())
-                .name(user.getUsername())
+                .name(user.getName())
                 .email(user.getEmail())
                 .avatarUrl(user.getAvatarUrl())
                 .status(user.isStatus())

@@ -97,6 +97,25 @@ public class ProductService implements IProductService {
         }
         return ResponseEntity.notFound().build();
     }
+    @Override
+    public ResponseEntity<ProductDTO> update(Integer id, ProductDTO productDTO) {
+        Optional<Product> optionalProduct = productRepository.findById(id);
+        if (optionalProduct.isPresent()) {
+            Product existingProduct = optionalProduct.get();
+            existingProduct.setName(productDTO.getName());
+            existingProduct.setCategory(productDTO.getCategory());
+            existingProduct.setDescription(productDTO.getDescription());
+            existingProduct.setPrice(productDTO.getPrice());
+            existingProduct.setStockQuantity(productDTO.getStockQuantity());
+            existingProduct.setStatus(productDTO.isStatus());
+
+
+            Product updatedProduct = productRepository.save(existingProduct);
+            return ResponseEntity.ok(convertToDTO(updatedProduct));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
     private ProductDTO convertToDTO(Product product) {
         ProductDTO productDTO = new ProductDTO();
@@ -107,6 +126,7 @@ public class ProductService implements IProductService {
         productDTO.setPrice(product.getPrice());
         productDTO.setStockQuantity(product.getStockQuantity());
         productDTO.setStatus(product.isStatus());
+        productDTO.setAverageScore(product.getAverageScore());
         productDTO.setCreatedDate(product.getCreatedDate());
         if (product.getImageUrl() != null) {
             List<String> imageUrls = product.getImageUrl()
@@ -133,4 +153,6 @@ public class ProductService implements IProductService {
             }
         }
     }
+
+
 }

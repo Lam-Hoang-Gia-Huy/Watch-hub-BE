@@ -31,7 +31,7 @@ public class SecurityConfiguration{
                     .requestMatchers("/api/v1/product", "/api/v1/product/{id}","/api/v1/product/user/{id}").permitAll()
                     .requestMatchers("/api/v1/user", "/api/v1/user/{id}").permitAll()
                     .requestMatchers("/api/v1/appraisal", "/api/v1/appraisal/{id}").permitAll()
-                    .requestMatchers("/api/v1/feedback/user/{userId}").permitAll()
+                    .requestMatchers("/api/v1/feedback/product/{productId}").permitAll()
                     .anyRequest().authenticated()
             ).authenticationProvider(authenticationProvider)
             .addFilterBefore(JwtAuthFilter, UsernamePasswordAuthenticationFilter.class );

@@ -42,13 +42,16 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        var user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        if (!user.isStatus()) {
+            throw new IllegalStateException("User account is not active");
+        }
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword()
                 )
         );
-        var user = userRepository.findByEmail(request.getEmail()).orElseThrow();
         var token = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
         var userDTO = convertToDTO(user);

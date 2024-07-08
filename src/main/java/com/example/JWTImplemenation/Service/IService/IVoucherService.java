@@ -11,4 +11,6 @@ public interface IVoucherService {
     void incrementUsage(Voucher voucher);
     void approveVoucher(Integer id);
     List<Voucher> findAll();
+    void deactivateVoucher(Integer id);
+    List<Voucher> findAllAvailableVouchers();
 }

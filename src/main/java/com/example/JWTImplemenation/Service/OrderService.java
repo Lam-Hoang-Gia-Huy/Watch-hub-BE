@@ -86,6 +86,7 @@ public class OrderService implements IOrderService {
         orderDTO.setId(order.getId());
         orderDTO.setUserId(order.getUser().getId());
         orderDTO.setTotalAmount(order.getTotalAmount());
+        orderDTO.setUserName(order.getUser().getName());
         orderDTO.setCreatedDate(order.getCreatedDate());
         List<OrderItemDTO> orderItemDTOs = order.getOrderItems().stream()
                 .map(this::convertOrderItemToDTO)

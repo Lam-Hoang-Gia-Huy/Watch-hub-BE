@@ -12,9 +12,10 @@ import java.util.List;
 @NoArgsConstructor
 public class ChatSessionDTO {
     private Integer id;
-    private ProductDTO watch;
-    private UserDTO appraiser;
-    private UserDTO seller;
+    private ProductDTO product;
+    private UserDTO staff;
+    private UserDTO user;
     private Timestamp createdDate;
     private List<ChatMessageDTO> messages;
 }
+

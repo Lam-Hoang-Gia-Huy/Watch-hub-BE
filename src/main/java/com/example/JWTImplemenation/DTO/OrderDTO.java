@@ -13,6 +13,7 @@ import java.util.List;
 public class OrderDTO {
     private Integer id;
     private Integer userId;
+    private String userName;
     private List<OrderItemDTO> orderItems;
     private Integer totalAmount;
     private Timestamp createdDate;

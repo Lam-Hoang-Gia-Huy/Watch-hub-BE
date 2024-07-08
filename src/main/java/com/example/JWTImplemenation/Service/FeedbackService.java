@@ -9,6 +9,8 @@ import com.example.JWTImplemenation.Entities.User;
 import com.example.JWTImplemenation.Repository.*;
 import com.example.JWTImplemenation.Service.IService.IFeedbackservice;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -75,6 +77,21 @@ public class FeedbackService implements IFeedbackservice {
         updateProductAverageScore(feedback.getProduct());
         return ResponseEntity.ok(convertToDTO(updatedFeedback));
     }
+    @Override
+    public ResponseEntity<List<FeedbackDTO>> getAllFeedbackByProduct(Integer productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        List<Feedback> feedbackList = feedbackRepository.findAllByProduct(product);
+        List<FeedbackDTO> feedbackDTOList = feedbackList.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(feedbackDTOList);
+    }
+
+
+
 
     @Override
     public ResponseEntity<FeedbackDTO> getFeedbackByProductAndOrder(Integer orderItemId) {
@@ -96,6 +113,8 @@ public class FeedbackService implements IFeedbackservice {
         FeedbackDTO feedbackDTO = new FeedbackDTO();
         feedbackDTO.setId(feedback.getId());
         feedbackDTO.setUserId(feedback.getUser().getId());
+        feedbackDTO.setUserName(feedback.getUser().getName());
+        feedbackDTO.setAvatarUrl(feedback.getUser().getAvatarUrl());
         feedbackDTO.setProductId(feedback.getProduct().getId());
         feedbackDTO.setOrderItemId(feedback.getOrderItem().getId()); // Ensure orderItemId is included in DTO
         feedbackDTO.setComment(feedback.getComment());

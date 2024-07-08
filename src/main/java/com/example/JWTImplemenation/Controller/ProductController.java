@@ -32,10 +32,7 @@ public class ProductController {
         return iProductService.save(product);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Integer id, @RequestBody Product product) {
-        return iProductService.update(id, product);
-    }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Integer id) {
@@ -54,6 +51,10 @@ public class ProductController {
             @RequestParam(required = false) Integer minPrice,
             @RequestParam(required = false) Integer maxPrice) {
         return iProductService.searchProducts(name, category, minPrice, maxPrice);
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Integer id, @RequestBody ProductDTO productDTO) {
+        return iProductService.update(id, productDTO);
     }
 
 }

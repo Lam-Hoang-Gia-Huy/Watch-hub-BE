@@ -14,5 +14,6 @@ public interface IUserService {
     ResponseEntity<UserDTO> update(Integer id, UserDTO userDTO, MultipartFile avatarFile);
     ResponseEntity<Void> deleteById(Integer id);
     ResponseEntity<Void> activateUser(Integer id);
+    ResponseEntity<List<UserDTO>> findAllStaff();
 }
 
